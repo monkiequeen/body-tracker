@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>體重體脂記錄工具</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: #f5f5f7;
+      color: #1d1d1f;
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: #1d1d1f;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      max-width: 680px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .card h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .input-group label {
+      font-size: 13px;
+      color: #666;
+      font-weight: 500;
+    }
+
+    .input-group input {
+      padding: 10px 14px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fafafa;
+      width: 100%;
+    }
+
+    .input-group input:focus {
+      border-color: #007aff;
+      background: #fff;
+    }
+
+    .btn {
+      padding: 11px 24px;
+      border-radius: 10px;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: #007aff;
+      color: #fff;
+      min-width: 88px;
+    }
+    .btn-primary:hover { opacity: 0.88; }
+
+    .btn-danger {
+      background: #ff3b30;
+      color: #fff;
+      font-size: 13px;
+      padding: 7px 14px;
+    }
+    .btn-danger:hover { opacity: 0.85; }
+
+    #save-msg {
+      font-size: 13px;
+      color: #34c759;
+      margin-top: 10px;
+      min-height: 18px;
+      font-weight: 500;
+    }
+
+    /* Chart filter */
+    .filter-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      margin-bottom: 20px;
+    }
+
+    .filter-row .input-group { min-width: 130px; flex: 0 0 auto; }
+
+    .preset-btns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .preset-btn {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1.5px solid #007aff;
+      background: transparent;
+      color: #007aff;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .preset-btn.active, .preset-btn:hover {
+      background: #007aff;
+      color: #fff;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 220px;
+      margin-bottom: 28px;
+    }
+
+    .chart-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    /* Records table */
+    .records-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .records-table th {
+      text-align: left;
+      padding: 8px 10px;
+      color: #888;
+      font-weight: 500;
+      border-bottom: 1.5px solid #f0f0f0;
+      font-size: 12px;
+    }
+    .records-table td {
+      padding: 10px 10px;
+      border-bottom: 1px solid #f5f5f5;
+      vertical-align: middle;
+    }
+    .records-table tr:last-child td { border-bottom: none; }
+    .records-table tr:hover td { background: #fafafa; }
+
+    .empty-msg {
+      text-align: center;
+      color: #bbb;
+      padding: 32px 0;
+      font-size: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .input-row { flex-direction: column; }
+      .btn-primary { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<h1>⚖️ 體重 · 體脂記錄</h1>
+
+<!-- 輸入區 -->
+<div class="card">
+  <h2>今日記錄</h2>
+  <div class="input-row">
+    <div class="input-group">
+      <label>日期</label>
+      <input type="date" id="input-date">
+    </div>
+    <div class="input-group">
+      <label>體重 (kg)</label>
+      <input type="number" id="input-weight" placeholder="e.g. 60.5" step="0.1" min="20" max="300"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('input-fat').focus();}">
+    </div>
+    <div class="input-group">
+      <label>體脂率 (%)</label>
+      <input type="number" id="input-fat" placeholder="e.g. 22.5" step="0.1" min="1" max="70">
+    </div>
+    <button class="btn btn-primary" onclick="saveRecord()">儲存</button>
+  </div>
+  <div id="save-msg"></div>
+</div>
+
+<!-- 趨勢圖 -->
+<div class="card">
+  <h2>趨勢圖</h2>
+
+  <div class="preset-btns">
+    <button class="preset-btn active" onclick="setPreset(1, this)">1 個月</button>
+    <button class="preset-btn" onclick="setPreset(3, this)">3 個月</button>
+    <button class="preset-btn" onclick="setPreset(6, this)">6 個月</button>
+    <button class="preset-btn" onclick="setPreset(12, this)">1 年</button>
+    <button class="preset-btn" onclick="setPreset(0, this)">全部</button>
+  </div>
+
+  <div class="filter-row">
+    <div class="input-group">
+      <label>起始日期</label>
+      <input type="date" id="chart-from" onchange="renderCharts()">
+    </div>
+    <div class="input-group">
+      <label>結束日期</label>
+      <input type="date" id="chart-to" onchange="renderCharts()">
+    </div>
+  </div>
+
+  <div class="chart-title">體重 (kg)</div>
+  <div class="chart-wrap"><canvas id="chart-weight"></canvas></div>
+
+  <div class="chart-title">體脂率 (%)</div>
+  <div class="chart-wrap"><canvas id="chart-fat"></canvas></div>
+</div>
+
+<!-- 歷史紀錄 -->
+<div class="card">
+  <h2>歷史記錄</h2>
+  <div id="records-container"></div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'body_records_v1';
+
+  // ── 資料操作 ──────────────────────────────────────
+  function loadData() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+    catch { return {}; }
+  }
+
+  function saveData(data) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  // ── 初始化 ────────────────────────────────────────
+  function init() {
+    const today = todayStr();
+    document.getElementById('input-date').value = today;
+    setPreset(3, document.querySelector('.preset-btn.active'));
+    renderCharts();
+    renderTable();
+  }
+
+  function todayStr() {
+    return new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD
+  }
+
+  // ── 儲存記錄 ──────────────────────────────────────
+  function saveRecord() {
+    const date   = document.getElementById('input-date').value;
+    const weight = parseFloat(document.getElementById('input-weight').value);
+    const fat    = parseFloat(document.getElementById('input-fat').value);
+
+    if (!date) { showMsg('請選擇日期', '#ff3b30'); return; }
+    if (isNaN(weight) && isNaN(fat)) { showMsg('請至少輸入體重或體脂率', '#ff3b30'); return; }
+
+    const data = loadData();
+    data[date] = {
+      weight: isNaN(weight) ? (data[date]?.weight ?? null) : weight,
+      fat:    isNaN(fat)    ? (data[date]?.fat    ?? null) : fat,
+    };
+    saveData(data);
+    showMsg('✓ 已儲存 ' + date);
+    renderCharts();
+    renderTable();
+  }
+
+  function showMsg(text, color = '#34c759') {
+    const el = document.getElementById('save-msg');
+    el.textContent = text;
+    el.style.color = color;
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.textContent = ''; }, 2500);
+  }
+
+  // ── 日期範圍 preset ───────────────────────────────
+  function setPreset(months, btn) {
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const to = todayStr();
+    let from;
+    if (months === 0) {
+      // 全部 — 找最早日期
+      const data = loadData();
+      const keys = Object.keys(data).sort();
+      from = keys.length ? keys[0] : to;
+    } else {
+      const d = new Date();
+      d.setMonth(d.getMonth() - months);
+      from = d.toLocaleDateString('sv-SE');
+    }
+
+    document.getElementById('chart-from').value = from;
+    document.getElementById('chart-to').value   = to;
+    renderCharts();
+  }
+
+  // ── 圖表 ──────────────────────────────────────────
+  let chartWeight = null;
+  let chartFat    = null;
+
+  function renderCharts() {
+    const from = document.getElementById('chart-from').value;
+    const to   = document.getElementById('chart-to').value;
+    const data = loadData();
+
+    const filtered = Object.entries(data)
+      .filter(([d]) => (!from || d >= from) && (!to || d <= to))
+      .sort(([a], [b]) => a.localeCompare(b));
+
+    const labels  = filtered.map(([d]) => d);
+    const weights = filtered.map(([, v]) => v.weight);
+    const fats    = filtered.map(([, v]) => v.fat);
+
+    chartWeight = drawChart('chart-weight', chartWeight, labels, weights, '#007aff', 'kg');
+    chartFat    = drawChart('chart-fat',    chartFat,    labels, fats,    '#ff9500', '%');
+  }
+
+  function drawChart(id, existing, labels, values, color, unit) {
+    const ctx = document.getElementById(id).getContext('2d');
+    if (existing) existing.destroy();
+
+    const hasData = values.some(v => v !== null && v !== undefined);
+
+    return new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          borderColor: color,
+          backgroundColor: color + '18',
+          borderWidth: 2,
+          pointRadius: labels.length > 60 ? 0 : 4,
+          pointHoverRadius: 6,
+          fill: true,
+          tension: 0.35,
+          spanGaps: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ctx.parsed.y !== null ? `${ctx.parsed.y} ${unit}` : '無資料'
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              maxTicksLimit: 8,
+              font: { size: 11 },
+              color: '#aaa',
+              maxRotation: 0,
+            },
+            grid: { color: '#f0f0f0' }
+          },
+          y: {
+            ticks: { font: { size: 11 }, color: '#aaa' },
+            grid: { color: '#f0f0f0' },
+          }
+        }
+      }
+    });
+  }
+
+  // ── 歷史表格 ──────────────────────────────────────
+  function renderTable() {
+    const data = loadData();
+    const entries = Object.entries(data).sort(([a], [b]) => b.localeCompare(a)); // 新→舊
+    const container = document.getElementById('records-container');
+
+    if (!entries.length) {
+      container.innerHTML = '<div class="empty-msg">尚無記錄</div>';
+      return;
+    }
+
+    const rows = entries.map(([date, v]) => `
+      <tr>
+        <td>${date}</td>
+        <td>${v.weight !== null ? v.weight + ' kg' : '—'}</td>
+        <td>${v.fat    !== null ? v.fat    + ' %'  : '—'}</td>
+        <td>
+          <button class="btn btn-danger" onclick="deleteRecord('${date}')">刪除</button>
+        </td>
+      </tr>
+    `).join('');
+
+    container.innerHTML = `
+      <table class="records-table">
+        <thead>
+          <tr>
+            <th>日期</th><th>體重</th><th>體脂率</th><th></th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  }
+
+  function deleteRecord(date) {
+    if (!confirm(`確定刪除 ${date} 的記錄？`)) return;
+    const data = loadData();
+    delete data[date];
+    saveData(data);
+    renderCharts();
+    renderTable();
+  }
+
+  // ── 啟動 ──────────────────────────────────────────
+  init();
+</script>
+</body>
+</html>
