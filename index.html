@@ -13,22 +13,22 @@
       background: #f5f5f7;
       color: #1d1d1f;
       min-height: 100vh;
-      padding: 24px 16px;
+      padding: 16px 12px;
     }
 
     h1 {
       text-align: center;
-      font-size: 22px;
-      font-weight: 600;
-      margin-bottom: 24px;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
       color: #1d1d1f;
     }
 
     .card {
       background: #fff;
       border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 20px;
+      padding: 16px;
+      margin-bottom: 16px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
       max-width: 680px;
       margin-left: auto;
@@ -36,44 +36,50 @@
     }
 
     .card h2 {
-      font-size: 15px;
+      font-size: 12px;
       font-weight: 600;
-      color: #555;
-      margin-bottom: 16px;
+      color: #999;
+      margin-bottom: 14px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
     }
 
+    /* 輸入區：手機直排，桌機橫排 */
     .input-row {
       display: flex;
+      flex-direction: column;
       gap: 12px;
-      flex-wrap: wrap;
-      align-items: flex-end;
+    }
+
+    /* 體重+體脂並排一行 */
+    .input-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
     }
 
     .input-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      flex: 1;
-      min-width: 120px;
+      gap: 5px;
     }
 
     .input-group label {
-      font-size: 13px;
-      color: #666;
+      font-size: 12px;
+      color: #888;
       font-weight: 500;
     }
 
     .input-group input {
-      padding: 10px 14px;
+      padding: 12px 14px;
       border: 1.5px solid #e0e0e0;
       border-radius: 10px;
-      font-size: 16px;
+      font-size: 17px;
       outline: none;
       transition: border-color 0.2s;
       background: #fafafa;
       width: 100%;
+      -webkit-appearance: none;
     }
 
     .input-group input:focus {
@@ -82,30 +88,30 @@
     }
 
     .btn {
-      padding: 11px 24px;
-      border-radius: 10px;
+      padding: 14px 24px;
+      border-radius: 12px;
       border: none;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       transition: opacity 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
     }
-    .btn:active { transform: scale(0.97); }
+    .btn:active { transform: scale(0.97); opacity: 0.85; }
 
     .btn-primary {
       background: #007aff;
       color: #fff;
-      min-width: 88px;
+      width: 100%;
     }
-    .btn-primary:hover { opacity: 0.88; }
 
     .btn-danger {
       background: #ff3b30;
       color: #fff;
       font-size: 13px;
-      padding: 7px 14px;
+      padding: 8px 14px;
+      border-radius: 8px;
     }
-    .btn-danger:hover { opacity: 0.85; }
 
     #save-msg {
       font-size: 13px;
@@ -113,28 +119,19 @@
       margin-top: 10px;
       min-height: 18px;
       font-weight: 500;
+      text-align: center;
     }
 
-    /* Chart filter */
-    .filter-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: flex-end;
-      margin-bottom: 20px;
-    }
-
-    .filter-row .input-group { min-width: 130px; flex: 0 0 auto; }
-
+    /* 趨勢圖 preset 按鈕 */
     .preset-btns {
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .preset-btn {
-      padding: 6px 14px;
+      padding: 7px 14px;
       border-radius: 20px;
       border: 1.5px solid #007aff;
       background: transparent;
@@ -143,57 +140,84 @@
       font-weight: 500;
       cursor: pointer;
       transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
     }
     .preset-btn.active, .preset-btn:hover {
       background: #007aff;
       color: #fff;
     }
 
+    /* 起訖日期並排 */
+    .filter-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
     .chart-wrap {
       position: relative;
-      height: 220px;
-      margin-bottom: 28px;
+      height: 180px;
+      margin-bottom: 24px;
     }
 
     .chart-title {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
-      color: #888;
-      margin-bottom: 8px;
+      color: #aaa;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    /* Records table */
-    .records-table {
-      width: 100%;
-      border-collapse: collapse;
+    /* 歷史記錄列表（卡片式，比 table 更適合手機） */
+    .record-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .record-item:last-child { border-bottom: none; }
+
+    .record-date {
       font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      min-width: 96px;
     }
-    .records-table th {
-      text-align: left;
-      padding: 8px 10px;
-      color: #888;
-      font-weight: 500;
-      border-bottom: 1.5px solid #f0f0f0;
-      font-size: 12px;
+
+    .record-vals {
+      display: flex;
+      gap: 14px;
+      font-size: 14px;
+      color: #555;
+      flex: 1;
+      padding: 0 10px;
     }
-    .records-table td {
-      padding: 10px 10px;
-      border-bottom: 1px solid #f5f5f5;
-      vertical-align: middle;
+
+    .record-val span {
+      font-size: 11px;
+      color: #aaa;
+      display: block;
     }
-    .records-table tr:last-child td { border-bottom: none; }
-    .records-table tr:hover td { background: #fafafa; }
 
     .empty-msg {
       text-align: center;
-      color: #bbb;
+      color: #ccc;
       padding: 32px 0;
       font-size: 14px;
     }
 
-    @media (max-width: 480px) {
-      .input-row { flex-direction: column; }
-      .btn-primary { width: 100%; }
+    /* 桌機加寬 */
+    @media (min-width: 600px) {
+      body { padding: 28px 20px; }
+      .card { padding: 24px; }
+      .input-row { flex-direction: row; align-items: flex-end; }
+      .input-pair { flex: 2; }
+      .input-row > .input-group { flex: 1; }
+      .btn-primary { width: auto; min-width: 88px; }
+      .chart-wrap { height: 220px; }
     }
   </style>
 </head>
@@ -209,14 +233,17 @@
       <label>日期</label>
       <input type="date" id="input-date">
     </div>
-    <div class="input-group">
-      <label>體重 (kg)</label>
-      <input type="number" id="input-weight" placeholder="e.g. 60.5" step="0.1" min="20" max="300"
-        onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('input-fat').focus();}">
-    </div>
-    <div class="input-group">
-      <label>體脂率 (%)</label>
-      <input type="number" id="input-fat" placeholder="e.g. 22.5" step="0.1" min="1" max="70">
+    <div class="input-pair">
+      <div class="input-group">
+        <label>體重 (kg)</label>
+        <input type="number" id="input-weight" placeholder="60.5" step="0.1" min="20" max="300"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('input-fat').focus();}">
+      </div>
+      <div class="input-group">
+        <label>體脂率 (%)</label>
+        <input type="number" id="input-fat" placeholder="22.5" step="0.1" min="1" max="70"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();saveRecord();}">
+      </div>
     </div>
     <button class="btn btn-primary" onclick="saveRecord()">儲存</button>
   </div>
@@ -245,6 +272,7 @@
       <input type="date" id="chart-to" onchange="renderCharts()">
     </div>
   </div>
+
 
   <div class="chart-title">體重 (kg)</div>
   <div class="chart-wrap"><canvas id="chart-weight"></canvas></div>
@@ -409,7 +437,7 @@
     });
   }
 
-  // ── 歷史表格 ──────────────────────────────────────
+  // ── 歷史記錄 ──────────────────────────────────────
   function renderTable() {
     const data = loadData();
     const entries = Object.entries(data).sort(([a], [b]) => b.localeCompare(a)); // 新→舊
@@ -420,27 +448,22 @@
       return;
     }
 
-    const rows = entries.map(([date, v]) => `
-      <tr>
-        <td>${date}</td>
-        <td>${v.weight !== null ? v.weight + ' kg' : '—'}</td>
-        <td>${v.fat    !== null ? v.fat    + ' %'  : '—'}</td>
-        <td>
-          <button class="btn btn-danger" onclick="deleteRecord('${date}')">刪除</button>
-        </td>
-      </tr>
+    const items = entries.map(([date, v]) => `
+      <div class="record-item">
+        <div class="record-date">${date}</div>
+        <div class="record-vals">
+          <div class="record-val">
+            <span>體重</span>${v.weight !== null ? v.weight + ' kg' : '—'}
+          </div>
+          <div class="record-val">
+            <span>體脂率</span>${v.fat !== null ? v.fat + ' %' : '—'}
+          </div>
+        </div>
+        <button class="btn btn-danger" onclick="deleteRecord('${date}')">刪除</button>
+      </div>
     `).join('');
 
-    container.innerHTML = `
-      <table class="records-table">
-        <thead>
-          <tr>
-            <th>日期</th><th>體重</th><th>體脂率</th><th></th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    `;
+    container.innerHTML = items;
   }
 
   function deleteRecord(date) {
